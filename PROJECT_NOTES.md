@@ -255,3 +255,24 @@ renderer code never receives Node.js or Electron primitives directly.
 - Search uses combobox/listbox semantics and updates the active descendant.
   Results render in a bounded scroll viewport, and the shell resizes through
   the preload/main IPC bridge as content changes.
+
+## M3 implementation notes
+
+- Search requests now use a typed main/preload/renderer IPC bridge with a
+  roughly 40 ms debounce, query cancellation, provider-scoped errors, and
+  streamed provider sections followed by a completion event.
+- The application provider discovers Start Menu `.lnk` entries through
+  Windows Script Host and UWP entries through `Get-StartApps`. Shortcut icons
+  are extracted with `app.getFileIcon`, converted to data URLs, and cached by
+  stable path hash. Results execute through shell paths or `shell:AppsFolder`.
+- Files and folders are searched from the user's Desktop, Documents,
+  Downloads, and the application working directory with bounded asynchronous
+  traversal and cancellation checks.
+- M3 intentionally does not implement actions/enrichment, previews, indexing,
+  persistence, settings, or other M4+ behavior.
+
+## M3 verification status
+
+- `git diff --check` passes.
+- Typecheck/runtime verification could not run in this environment because
+  `node`, `npm`, `electron`, and `tsc` are not installed or on `PATH`.
