@@ -4,6 +4,7 @@ export const IPC = {
   shellTheme: "shell:theme",
   shellFocus: "shell:focus",
   hideWindow: "window:hide",
+  resizeWindow: "window:resize",
 } as const;
 
 export type ShellTheme = "light" | "dark";

@@ -240,3 +240,18 @@ renderer code never receives Node.js or Electron primitives directly.
   the provisional 760 px historical reference, the 56 px search field, 24 px
   light-weight text, magnifier geometry, 12 px content inset, 16 px panel
   radius, and the acrylic/opaque fallback appearance.
+
+## M2 implementation notes
+
+- The renderer now uses deterministic fake grouped results with Top Hit first
+  and selected by default. Sections use capped result counts with a Show all
+  action.
+- Result rows are 40 px tall with 20 px icons, 13 px titles, 11 px secondary
+  text, right-aligned metadata, accent selection, hover highlighting, and a
+  hidden scrollbar.
+- Arrow keys, Tab section navigation, Enter, Ctrl+Enter, Ctrl+C, Escape, mouse
+  hover, and click are wired. Open/reveal/copy currently log to the renderer
+  console for the fake-data milestone.
+- Search uses combobox/listbox semantics and updates the active descendant.
+  Results render in a bounded scroll viewport, and the shell resizes through
+  the preload/main IPC bridge as content changes.

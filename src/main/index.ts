@@ -12,6 +12,8 @@ import { IPC, ShellTheme } from "../shared/ipc";
 
 const WINDOW_WIDTH = 680;
 const WINDOW_HEIGHT = 180;
+const MIN_WINDOW_HEIGHT = 180;
+const MAX_WINDOW_HEIGHT = 500;
 const CLOSE_DURATION_MS = 80;
 const HOTKEY = "Alt+Space";
 
@@ -24,12 +26,12 @@ function isWindows11OrNewer(): boolean {
     return false;
   }
 
-  function shouldUseAcrylic(): boolean {
-    return isWindows11OrNewer() && systemPreferences.isAeroGlassEnabled;
-  }
-
   const build = Number(process.getSystemVersion().split(".")[2]);
   return Number.isFinite(build) && build >= 22000;
+}
+
+function shouldUseAcrylic(): boolean {
+  return isWindows11OrNewer() && systemPreferences.isAeroGlassEnabled;
 }
 
 function getTheme(): ShellTheme {
@@ -42,6 +44,19 @@ function positionWindow(window: BrowserWindow): void {
   const x = Math.round(display.workArea.x + (display.workArea.width - WINDOW_WIDTH) / 2);
   const y = Math.round(display.workArea.y + display.workArea.height * 0.22);
   window.setPosition(x, y, false);
+}
+
+function resizeWindow(_event: Electron.IpcMainEvent, requestedHeight: number): void {
+  if (!launcherWindow || !Number.isFinite(requestedHeight)) {
+    return;
+  }
+
+  const height = Math.max(MIN_WINDOW_HEIGHT, Math.min(MAX_WINDOW_HEIGHT, Math.round(requestedHeight)));
+  const [width] = launcherWindow.getSize();
+  if (launcherWindow.getSize()[1] !== height) {
+    launcherWindow.setSize(width, height, true);
+    positionWindow(launcherWindow);
+  }
 }
 
 function sendTheme(): void {
@@ -104,8 +119,8 @@ function createLauncherWindow(): void {
     height: WINDOW_HEIGHT,
     minWidth: WINDOW_WIDTH,
     maxWidth: WINDOW_WIDTH,
-    minHeight: WINDOW_HEIGHT,
-    maxHeight: WINDOW_HEIGHT,
+    minHeight: MIN_WINDOW_HEIGHT,
+    maxHeight: MAX_WINDOW_HEIGHT,
     show: false,
     frame: false,
     transparent: false,
@@ -147,6 +162,7 @@ app.whenReady().then(() => {
   nativeTheme.on("updated", sendTheme);
 
   ipcMain.on(IPC.hideWindow, hideLauncher);
+  ipcMain.on(IPC.resizeWindow, resizeWindow);
 });
 
 app.on("will-quit", () => {
