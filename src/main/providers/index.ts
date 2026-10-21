@@ -11,6 +11,7 @@ import { SettingsProvider } from "./settings";
 import { SystemProvider } from "./system";
 import { UnitsProvider } from "./units";
 import { WebProvider } from "./web";
+import { readStaleCache, writeCache } from "../cache";
 
 const DEBOUNCE_MS = 40;
 const DEFAULT_LIMIT = 8;
@@ -26,7 +27,14 @@ export class ProviderManager {
     new SystemProvider(), new WebProvider(),
   ];
   private readonly iconCache = new Map<string, string>();
+  private readonly iconCacheReady: Promise<void>;
   private active: { request: SearchRequest; controller: AbortController; timer: NodeJS.Timeout } | null = null;
+
+  constructor() {
+    this.iconCacheReady = readStaleCache<Record<string, string>>("icons.json").then((cached) => {
+      for (const [key, value] of Object.entries(cached ?? {})) this.iconCache.set(key, value);
+    });
+  }
 
   register(window: BrowserWindow): void {
     ipcMain.on(IPC.searchStart, (_event, request: SearchRequest) => this.start(window, request));
@@ -80,6 +88,7 @@ export class ProviderManager {
     const limit = Math.max(1, Math.min(25, request.limit ?? DEFAULT_LIMIT));
     let resultCount = 0;
     await Promise.all(selected.map(async (provider) => {
+      const startedAt = performance.now();
       try {
         const items = await provider.search(request.text.trim(), {
           queryId: request.queryId,
@@ -106,6 +115,8 @@ export class ProviderManager {
             recoverable: true,
           });
         }
+      } finally {
+        console.info(`[QuickLaunch] search provider=${provider.id} query=${request.queryId} latencyMs=${Math.round(performance.now() - startedAt)} cancelled=${controller.signal.aborted}`);
       }
     }));
     if (!controller.signal.aborted && resultCount === 0 && (!request.providers?.length || request.providers.includes("web"))) {
@@ -126,10 +137,12 @@ export class ProviderManager {
   }
 
   private async readIcon(path: string, source: IconReference["source"]): Promise<IconReference> {
+    await this.iconCacheReady;
     const cacheKey = createHash("sha256").update(path.toLowerCase()).digest("hex");
     if (!this.iconCache.has(cacheKey)) {
       const image = await app.getFileIcon(path, { size: "small" });
       this.iconCache.set(cacheKey, image.toDataURL());
+      await writeCache("icons.json", Object.fromEntries(this.iconCache));
     }
     return { cacheKey, source, mimeType: "image/png" };
   }

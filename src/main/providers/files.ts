@@ -1,15 +1,9 @@
-import { promises as fs } from "node:fs";
-import { homedir } from "node:os";
-import { basename, join } from "node:path";
+import { basename } from "node:path";
 import { LauncherResult } from "../../shared/ipc";
 import { Provider, ProviderContext } from "../../shared/providers";
-
-type FileEntry = { path: string; directory: boolean };
-
-function getRoots(): string[] {
-  const home = homedir();
-  return [join(home, "Desktop"), join(home, "Documents"), join(home, "Downloads"), process.cwd()];
-}
+import { searchEverything } from "./everything";
+import { IncrementalFileIndex } from "./fallback-index";
+import { searchSystemIndex } from "./system-index";
 
 function scoreMatch(name: string, query: string): number {
   if (!query) return 0.25;
@@ -21,45 +15,28 @@ function scoreMatch(name: string, query: string): number {
   return 0;
 }
 
-async function collectEntries(signal: AbortSignal, limit: number): Promise<FileEntry[]> {
-  const entries: FileEntry[] = [];
-  const pending = getRoots();
-  const visited = new Set<string>();
-
-  while (pending.length && entries.length < limit * 8) {
-    if (signal.aborted) throw new DOMException("The search was cancelled.", "AbortError");
-    const current = pending.shift();
-    if (!current || visited.has(current)) continue;
-    visited.add(current);
-    let children;
-    try {
-      children = await fs.readdir(current, { withFileTypes: true });
-    } catch (error) {
-      console.warn(`[QuickLaunch] Unable to scan ${current}:`, error);
-      continue;
-    }
-    for (const child of children) {
-      if (signal.aborted) throw new DOMException("The search was cancelled.", "AbortError");
-      if (child.name.startsWith(".") || child.name === "node_modules" || child.name === "AppData") continue;
-      const path = join(current, child.name);
-      if (child.isDirectory()) {
-        entries.push({ path, directory: true });
-        if (pending.length < 256) pending.push(path);
-      } else if (child.isFile()) {
-        entries.push({ path, directory: false });
-      }
-      if (entries.length >= limit * 8) break;
-    }
-  }
-  return entries;
-}
 
 export class FilesProvider implements Provider {
   readonly id = "files";
   readonly title = "Files";
+  private readonly fallback = new IncrementalFileIndex();
 
   async search(text: string, context: ProviderContext): Promise<LauncherResult[]> {
-    const entries = await collectEntries(context.signal, context.limit);
+    let entries;
+    try {
+      entries = await searchSystemIndex(text, context.limit, context.signal);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") throw error;
+      console.warn("[QuickLaunch] Windows Search unavailable; trying Everything.", error);
+      try {
+        const everythingEntries = await searchEverything(text, context.limit, context.signal);
+        entries = everythingEntries ?? await this.fallback.search(text, context.limit, context.signal);
+      } catch (everythingError) {
+        if (everythingError instanceof DOMException && everythingError.name === "AbortError") throw everythingError;
+        console.warn("[QuickLaunch] Everything unavailable; using incremental file index.", everythingError);
+        entries = await this.fallback.search(text, context.limit, context.signal);
+      }
+    }
     const matches = entries
       .map((entry): LauncherResult | null => {
         const title = basename(entry.path);
