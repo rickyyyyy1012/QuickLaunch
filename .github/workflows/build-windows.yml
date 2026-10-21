@@ -7,6 +7,10 @@ on:
       - master
     tags:
       - "v*"
+  pull_request:
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 concurrency:
@@ -24,7 +28,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build release executable
-        run: msbuild QuickLaunch.slnx /t:Rebuild /p:Configuration=Release /p:Platform=AnyCPU
+        run: msbuild QuickLaunch.slnx /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Upload QuickLaunch executable
         uses: actions/upload-artifact@v4
