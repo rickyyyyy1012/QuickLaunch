@@ -332,3 +332,24 @@ renderer code never receives Node.js or Electron primitives directly.
 - Typecheck/runtime verification depends on the Windows/npm toolchain; the
   environment used for this milestone does not expose `node`, `npm`, or
   `tsc` on `PATH`.
+
+## M7 implementation notes
+
+- Preferences is a separate BrowserWindow opened from the tray menu or the
+  built-in QuickLaunch Preferences settings result.
+- Settings persist as JSON under Electron's user-data directory. The window
+  edits the global hotkey, provider enabled/order state, search scopes, and
+  appearance theme.
+- Hotkey changes unregister the previous accelerator only after the new
+  accelerator is validated; conflicts leave the previous hotkey active and
+  show an explicit error in Preferences.
+- Provider ordering and enabled state are applied to subsequent searches.
+  Search scopes gate applications, files, folders, Windows settings, and web
+  fallback independently.
+
+## M7 verification status
+
+- `git diff --check` passes.
+- Typecheck/build verification is blocked in this environment because `npm`
+  and `node` are not installed or on `PATH`.
+- No M8 work was started.

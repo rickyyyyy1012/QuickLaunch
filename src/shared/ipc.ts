@@ -12,9 +12,14 @@ export const IPC = {
   searchComplete: "search:complete",
   resultExecute: "result:execute",
   iconRead: "icon:read",
+  preferencesOpen: "preferences:open",
+  settingsGet: "settings:get",
+  settingsUpdate: "settings:update",
+  settingsChanged: "settings:changed",
+  hotkeyError: "hotkey:error",
 } as const;
 
-export type ShellTheme = "light" | "dark";
+export type ShellTheme = "light" | "dark" | "high-contrast";
 
 export type QueryId = string;
 
@@ -87,9 +92,18 @@ export interface ProviderSettings {
   order: number;
 }
 
+export interface SearchScopes {
+  applications: boolean;
+  files: boolean;
+  folders: boolean;
+  settings: boolean;
+  web: boolean;
+}
+
 export interface AppSettings {
   hotkey: HotkeySettings;
   providers: ProviderSettings[];
+  scopes: SearchScopes;
   theme: "system" | "light" | "dark" | "high-contrast";
   reducedMotion: boolean;
 }
@@ -113,5 +127,6 @@ export interface RendererToMain {
   "result:execute": (result: LauncherResult) => void;
   "settings:get": () => Promise<AppSettings>;
   "settings:update": (settings: Partial<AppSettings>) => Promise<AppSettings>;
+  "preferences:open": () => void;
   "icon:read": (icon: IconReference) => Promise<string>;
 }

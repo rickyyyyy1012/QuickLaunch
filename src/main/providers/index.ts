@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { createHash } from "node:crypto";
-import { IPC, IconReference, LauncherResult, SearchCancelRequest, SearchRequest } from "../../shared/ipc";
+import { AppSettings, IPC, IconReference, LauncherResult, SearchCancelRequest, SearchRequest } from "../../shared/ipc";
 import { Provider } from "../../shared/providers";
 import { AppsProvider } from "./apps";
 import { FilesProvider, FoldersProvider } from "./files";
@@ -29,11 +29,19 @@ export class ProviderManager {
   private readonly iconCache = new Map<string, string>();
   private readonly iconCacheReady: Promise<void>;
   private active: { request: SearchRequest; controller: AbortController; timer: NodeJS.Timeout } | null = null;
+  private settings: AppSettings;
+  private readonly openPreferences: () => void;
 
-  constructor() {
+  constructor(settings: AppSettings, openPreferences: () => void) {
+    this.settings = settings;
+    this.openPreferences = openPreferences;
     this.iconCacheReady = readStaleCache<Record<string, string>>("icons.json").then((cached) => {
       for (const [key, value] of Object.entries(cached ?? {})) this.iconCache.set(key, value);
     });
+  }
+
+  applySettings(settings: AppSettings): void {
+    this.settings = settings;
   }
 
   register(window: BrowserWindow): void {
@@ -82,9 +90,12 @@ export class ProviderManager {
 
   private async run(window: BrowserWindow, request: SearchRequest, controller: AbortController): Promise<void> {
     if (this.active?.request.queryId !== request.queryId) return;
+    const enabled = new Set(this.settings.providers.filter((provider) => provider.enabled).map((provider) => provider.id));
     const selected = request.providers?.length
-      ? this.providers.filter((provider) => request.providers?.includes(provider.id))
-      : this.providers.filter((provider) => provider.id !== "web");
+      ? this.providers.filter((provider) => request.providers?.includes(provider.id) && enabled.has(provider.id))
+      : this.providers
+        .filter((provider) => enabled.has(provider.id) && provider.id !== "web" && this.isScopeEnabled(provider.id))
+        .sort((a, b) => this.providerOrder(a.id) - this.providerOrder(b.id));
     const limit = Math.max(1, Math.min(25, request.limit ?? DEFAULT_LIMIT));
     let resultCount = 0;
     await Promise.all(selected.map(async (provider) => {
@@ -119,7 +130,8 @@ export class ProviderManager {
         console.info(`[QuickLaunch] search provider=${provider.id} query=${request.queryId} latencyMs=${Math.round(performance.now() - startedAt)} cancelled=${controller.signal.aborted}`);
       }
     }));
-    if (!controller.signal.aborted && resultCount === 0 && (!request.providers?.length || request.providers.includes("web"))) {
+    if (!controller.signal.aborted && resultCount === 0 && this.settings.scopes.web && enabled.has("web")
+      && (!request.providers?.length || request.providers.includes("web"))) {
       const web = this.providers.find((provider) => provider.id === "web");
       if (web) {
         const items = await web.search(request.text.trim(), {
@@ -127,6 +139,18 @@ export class ProviderManager {
         });
         if (items.length && !window.isDestroyed()) {
           window.webContents.send(IPC.searchSection, { queryId: request.queryId, providerId: web.id, title: web.title, items, isFinal: true });
+        }
+
+        private providerOrder(id: string): number {
+          return this.settings.providers.find((provider) => provider.id === id)?.order ?? Number.MAX_SAFE_INTEGER;
+        }
+
+        private isScopeEnabled(id: string): boolean {
+          if (id === "apps") return this.settings.scopes.applications;
+          if (id === "files") return this.settings.scopes.files;
+          if (id === "folders") return this.settings.scopes.folders;
+          if (id === "settings") return this.settings.scopes.settings;
+          return true;
         }
       }
     }
@@ -149,6 +173,7 @@ export class ProviderManager {
 
   private async execute(target: string): Promise<void> {
     if (target.startsWith("shell:")) await shell.openExternal(target);
+    else if (target === "quicklaunch:preferences") this.openPreferences();
     else if (target.startsWith("quicklaunch:copy:")) await this.copyToClipboard(target.slice("quicklaunch:copy:".length));
     else if (target.startsWith("quicklaunch:system:")) await this.executeSystemAction(target.slice("quicklaunch:system:".length));
     else if (target.startsWith("ms-settings:")) await shell.openExternal(target);
@@ -191,6 +216,6 @@ export class ProviderManager {
   }
 }
 
-export function createProviderManager(): ProviderManager {
-  return new ProviderManager();
+export function createProviderManager(settings: AppSettings, openPreferences: () => void): ProviderManager {
+  return new ProviderManager(settings, openPreferences);
 }

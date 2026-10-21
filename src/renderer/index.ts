@@ -1,24 +1,5 @@
-import { applyTheme, ThemeName } from "./theme/tokens";
+import { applyTheme } from "./theme/tokens";
 import { LauncherResult, SearchError, SearchSection } from "../shared/ipc";
-
-declare global {
-  interface Window {
-    quickLaunch: {
-      onOpening(callback: (reducedMotion: boolean) => void): () => void;
-      onClosing(callback: (reducedMotion: boolean) => void): () => void;
-      onTheme(callback: (theme: ThemeName) => void): () => void;
-      startSearch(request: { queryId: string; text: string; limit?: number }): void;
-      cancelSearch(request: { queryId: string }): void;
-      onSearchSection(callback: (section: SearchSection) => void): () => void;
-      onSearchError(callback: (error: SearchError) => void): () => void;
-      onSearchComplete(callback: (queryId: string) => void): () => void;
-      execute(result: LauncherResult): void;
-      readIcon(icon: NonNullable<LauncherResult["icon"]>): Promise<string>;
-      hide(): void;
-      resize(height: number): void;
-    };
-  }
-}
 
 type ResultSection = { id: string; title: string; results: LauncherResult[]; expanded: boolean };
 

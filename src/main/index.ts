@@ -3,25 +3,32 @@ import {
   BrowserWindow,
   globalShortcut,
   ipcMain,
+  Menu,
+  nativeImage,
   nativeTheme,
   screen,
   systemPreferences,
+  Tray,
 } from "electron";
 import { join } from "node:path";
-import { IPC, ShellTheme } from "../shared/ipc";
+import { AppSettings, IPC, ShellTheme } from "../shared/ipc";
 import { createProviderManager, ProviderManager } from "./providers";
+import { DEFAULT_SETTINGS, SettingsStore } from "./settings";
 
 const WINDOW_WIDTH = 680;
 const WINDOW_HEIGHT = 180;
 const MIN_WINDOW_HEIGHT = 180;
 const MAX_WINDOW_HEIGHT = 500;
 const CLOSE_DURATION_MS = 80;
-const HOTKEY = "Alt+Space";
-
 let launcherWindow: BrowserWindow | null = null;
+let preferencesWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
 let hideTimer: NodeJS.Timeout | null = null;
 let launcherReady = false;
 let providerManager: ProviderManager | null = null;
+const settingsStore = new SettingsStore();
+let settings: AppSettings = DEFAULT_SETTINGS;
+let registeredHotkey = "";
 
 function isWindows11OrNewer(): boolean {
   if (process.platform !== "win32") {
@@ -37,6 +44,9 @@ function shouldUseAcrylic(): boolean {
 }
 
 function getTheme(): ShellTheme {
+  if (settings.theme === "high-contrast") return "high-contrast";
+  if (settings.theme === "light") return "light";
+  if (settings.theme === "dark") return "dark";
   return nativeTheme.shouldUseDarkColors ? "dark" : "light";
 }
 
@@ -65,6 +75,7 @@ function sendTheme(): void {
   if (launcherReady) {
     launcherWindow?.webContents.send(IPC.shellTheme, getTheme());
   }
+  preferencesWindow?.webContents.send(IPC.shellTheme, getTheme());
 }
 
 function clearHideTimer(): void {
@@ -114,6 +125,78 @@ function toggleLauncher(): void {
   }
 }
 
+function createPreferencesWindow(): void {
+  if (preferencesWindow && !preferencesWindow.isDestroyed()) {
+    preferencesWindow.show();
+    preferencesWindow.focus();
+    return;
+  }
+  preferencesWindow = new BrowserWindow({
+    width: 640,
+    height: 700,
+    minWidth: 560,
+    minHeight: 560,
+    show: false,
+    title: "QuickLaunch Preferences",
+    backgroundColor: "#F2F5F5F7",
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      preload: join(__dirname, "../preload/index.js"),
+    },
+  });
+  preferencesWindow.loadFile(join(__dirname, "../renderer/preferences.html"));
+  preferencesWindow.webContents.on("did-finish-load", sendTheme);
+  preferencesWindow.once("ready-to-show", () => preferencesWindow?.show());
+  preferencesWindow.on("closed", () => { preferencesWindow = null; });
+}
+
+function broadcastSettings(): void {
+  launcherWindow?.webContents.send(IPC.settingsChanged, settings);
+  preferencesWindow?.webContents.send(IPC.settingsChanged, settings);
+  sendTheme();
+}
+
+function registerConfiguredHotkey(): string | null {
+  if (registeredHotkey) {
+    globalShortcut.unregister(registeredHotkey);
+    registeredHotkey = "";
+  }
+  if (!settings.hotkey.enabled) return null;
+  if (!settings.hotkey.accelerator) return "Enter a global hotkey.";
+  try {
+    if (!globalShortcut.register(settings.hotkey.accelerator, toggleLauncher)) {
+      return `The hotkey "${settings.hotkey.accelerator}" is unavailable or already in use.`;
+    }
+  } catch (error) {
+    console.error("[QuickLaunch] Invalid global hotkey.", error);
+    return `The hotkey "${settings.hotkey.accelerator}" is invalid or unavailable.`;
+  }
+  registeredHotkey = settings.hotkey.accelerator;
+  return null;
+}
+
+async function updateSettings(patch: Partial<AppSettings>): Promise<AppSettings> {
+  const previous = settings;
+  const next = await settingsStore.update(patch);
+  settings = next;
+  const hotkeyChanged = previous.hotkey.accelerator !== next.hotkey.accelerator
+    || previous.hotkey.enabled !== next.hotkey.enabled;
+  if (hotkeyChanged) {
+    const error = registerConfiguredHotkey();
+    if (error) {
+      settings = await settingsStore.update({ hotkey: previous.hotkey });
+      const restoreError = registerConfiguredHotkey();
+      if (restoreError) console.error("[QuickLaunch] Unable to restore the previous hotkey.", restoreError);
+      preferencesWindow?.webContents.send(IPC.hotkeyError, error);
+      throw new Error(error);
+    }
+  }
+  providerManager?.applySettings(settings);
+  broadcastSettings();
+  return settings;
+}
+
 function createLauncherWindow(): void {
   const useAcrylic = shouldUseAcrylic();
   launcherWindow = new BrowserWindow({
@@ -152,26 +235,44 @@ function createLauncherWindow(): void {
   });
 }
 
-function registerHotkey(): void {
-  if (!globalShortcut.register(HOTKEY, toggleLauncher)) {
-    console.error(`Unable to register global hotkey: ${HOTKEY}`);
-  }
+function createTray(): void {
+  tray = new Tray(nativeImage.createFromDataURL(
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAAHElEQVR42mNgGAWjgP8fDAwMDAwM/4eB4T8QAAHkAAf8FQx8AAAAASUVORK5CYII=",
+  ));
+  tray.setToolTip("QuickLaunch");
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: "Open QuickLaunch", click: showLauncher },
+    { label: "Preferences", click: createPreferencesWindow },
+    { type: "separator" },
+    { label: "Quit", click: () => app.quit() },
+  ]));
+  tray.on("double-click", showLauncher);
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  settings = await settingsStore.load();
   createLauncherWindow();
-  registerHotkey();
+  const hotkeyError = registerConfiguredHotkey();
+  if (hotkeyError) console.error(`[QuickLaunch] ${hotkeyError}`);
+  createTray();
   nativeTheme.on("updated", sendTheme);
-  providerManager = createProviderManager();
+  providerManager = createProviderManager(settings, createPreferencesWindow);
 
   ipcMain.on(IPC.hideWindow, hideLauncher);
   ipcMain.on(IPC.resizeWindow, resizeWindow);
+  ipcMain.on(IPC.preferencesOpen, createPreferencesWindow);
+  ipcMain.handle(IPC.settingsGet, () => settingsStore.get());
+  ipcMain.handle(IPC.settingsUpdate, async (_event, patch: Partial<AppSettings>) => updateSettings(patch));
   providerManager.register(launcherWindow!);
 });
 
 app.on("will-quit", () => {
   nativeTheme.removeListener("updated", sendTheme);
   globalShortcut.unregisterAll();
+  tray?.destroy();
+  tray = null;
+  ipcMain.removeHandler(IPC.settingsGet);
+  ipcMain.removeHandler(IPC.settingsUpdate);
   providerManager?.dispose();
   providerManager = null;
 });

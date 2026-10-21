@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light dark" />
+    <title>QuickLaunch Preferences</title>
+    <link rel="stylesheet" href="./preferences.css" />
+  </head>
+  <body>
+    <main class="preferences">
+      <header>
+        <div>
+          <p class="eyebrow">QuickLaunch</p>
+          <h1>Preferences</h1>
+        </div>
+        <button id="close-button" class="secondary" type="button">Close</button>
+      </header>
+      <p id="status" class="status" role="status"></p>
+
+      <section class="card">
+        <h2>Global hotkey</h2>
+        <p class="help">Use a key combination to show or hide QuickLaunch from any app.</p>
+        <div class="hotkey-row">
+          <label class="switch-label"><input id="hotkey-enabled" type="checkbox" /> Enabled</label>
+          <input id="hotkey" class="text-input" type="text" placeholder="Alt+Space" autocomplete="off" />
+          <button id="save-hotkey" type="button">Apply</button>
+        </div>
+        <p id="hotkey-error" class="error" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <h2>Providers</h2>
+        <p class="help">Disable providers you do not use and move the arrows to change result order.</p>
+        <div id="providers" class="provider-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>Search scopes</h2>
+        <p class="help">Choose which kinds of results QuickLaunch searches.</p>
+        <div class="check-grid">
+          <label><input data-scope="applications" type="checkbox" /> Applications</label>
+          <label><input data-scope="files" type="checkbox" /> Files</label>
+          <label><input data-scope="folders" type="checkbox" /> Folders</label>
+          <label><input data-scope="settings" type="checkbox" /> Windows settings</label>
+          <label><input data-scope="web" type="checkbox" /> Web fallback</label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Appearance</h2>
+        <p class="help">Choose the color scheme used by QuickLaunch.</p>
+        <label class="field-label" for="theme">Theme</label>
+        <select id="theme" class="select-input">
+          <option value="system">Use system setting</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="high-contrast">High contrast</option>
+        </select>
+      </section>
+    </main>
+    <script src="./preferences.js"></script>
+  </body>
+</html>
