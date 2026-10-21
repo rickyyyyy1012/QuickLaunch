@@ -283,11 +283,31 @@ renderer code never receives Node.js or Electron primitives directly.
 - Files and folders are searched from the user's Desktop, Documents,
   Downloads, and the application working directory with bounded asynchronous
   traversal and cancellation checks.
-- M3 intentionally does not implement actions/enrichment, previews, indexing,
-  persistence, settings, or other M4+ behavior.
+- M3 intentionally does not implement indexing, persistence, settings, or
+  other later milestone behavior.
 
 ## M3 verification status
 
 - `git diff --check` passes.
 - Typecheck/runtime verification could not run in this environment because
+  `node`, `npm`, `electron`, and `tsc` are not installed or on `PATH`.
+
+## M5 implementation notes
+
+- The renderer now uses a two-column results layout with a right-side preview
+  pane sized from the provisional design tokens.
+- The preview follows the selected result immediately for keyboard, mouse, and
+  section navigation. It displays the result icon or thumbnail, title, kind,
+  and labeled metadata derived from `PreviewModel` or the result's available
+  path, URI, and subtitle fields.
+- Results without a preview model still show useful fallback metadata and an
+  explicit "No additional preview available" state. An empty result set shows
+  a neutral selection prompt instead of leaving stale preview content visible.
+- Icon reads are shared between list rows and the preview pane, deduplicated
+  while pending, and rerender the preview when the cached image arrives.
+
+## M5 verification status
+
+- `git diff --check` passes.
+- Typecheck/runtime verification remains blocked in this environment because
   `node`, `npm`, `electron`, and `tsc` are not installed or on `PATH`.

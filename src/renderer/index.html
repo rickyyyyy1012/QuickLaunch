@@ -23,9 +23,12 @@
           aria-autocomplete="list"
         />
       </label>
-      <section class="results-shell" aria-label="Search results">
-        <div id="results-list" class="results-list" role="listbox" aria-label="Search results"></div>
-      </section>
+      <div class="content-shell">
+        <section class="results-shell" aria-label="Search results">
+          <div id="results-list" class="results-list" role="listbox" aria-label="Search results"></div>
+        </section>
+        <aside id="preview-pane" class="preview-pane" aria-label="Selected result preview"></aside>
+      </div>
     </main>
     <script src="./index.js"></script>
   </body>

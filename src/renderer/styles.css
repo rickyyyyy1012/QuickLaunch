@@ -62,10 +62,16 @@ body.is-closing {
 }
 
 .results-shell {
-  max-height: 390px;
   margin-top: 10px;
   overflow: hidden;
   transition: max-height 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.content-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--ql-preview-width);
+  gap: var(--ql-results-preview-gap);
+  align-items: start;
 }
 
 .results-list {
@@ -190,6 +196,113 @@ body.is-closing {
 }
 
 .show-all:hover { background: var(--ql-hover-row); }
+
+.preview-pane {
+  min-height: 156px;
+  margin-top: 10px;
+  padding: var(--ql-preview-padding);
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--ql-search-background);
+}
+
+.preview-content {
+  display: grid;
+  justify-items: start;
+  min-width: 0;
+}
+
+.preview-icon {
+  display: grid;
+  width: var(--ql-preview-icon-size);
+  height: var(--ql-preview-icon-size);
+  margin-bottom: 10px;
+  place-items: center;
+  border-radius: var(--ql-preview-icon-radius);
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.preview-icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.preview-title {
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ql-preview-title-size);
+  font-weight: 600;
+}
+
+.preview-kind {
+  margin-top: 2px;
+  color: var(--ql-muted-text);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.preview-metadata {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.preview-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 5px;
+  color: var(--ql-muted-text);
+  font-size: var(--ql-preview-body-size);
+  line-height: 14px;
+}
+
+.preview-label {
+  color: var(--ql-text);
+  font-weight: 600;
+}
+
+.preview-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-unavailable {
+  margin: 14px 0 0;
+  color: var(--ql-muted-text);
+  font-size: var(--ql-preview-body-size);
+  line-height: 15px;
+}
+
+.preview-empty {
+  display: grid;
+  min-height: 124px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  color: var(--ql-muted-text);
+  font-size: var(--ql-preview-body-size);
+  text-align: center;
+}
+
+.preview-empty-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ql-accent);
+  background: var(--ql-hover-row);
+  font-size: 18px;
+}
 
 .search-shell {
   display: grid;
