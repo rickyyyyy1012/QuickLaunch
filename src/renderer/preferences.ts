@@ -24,11 +24,11 @@ function render(): void {
   hotkeyEnabled.checked = settings.hotkey.enabled;
   theme.value = settings.theme;
   providers.innerHTML = settings.providers.map((provider, index) => `
-    <div class="provider-row">
+    <div class="provider-row" role="listitem">
       <label class="switch-label"><input data-provider="${provider.id}" type="checkbox" ${provider.enabled ? "checked" : ""} /> <span class="provider-name">${providerTitles[provider.id] ?? provider.id}</span></label>
       <span class="provider-controls">
-        <button data-move="${index}" data-direction="-1" type="button" aria-label="Move up">↑</button>
-        <button data-move="${index}" data-direction="1" type="button" aria-label="Move down">↓</button>
+        <button data-move="${index}" data-direction="-1" type="button" aria-label="Move ${providerTitles[provider.id] ?? provider.id} up" ${index === 0 ? "disabled" : ""}>↑</button>
+        <button data-move="${index}" data-direction="1" type="button" aria-label="Move ${providerTitles[provider.id] ?? provider.id} down" ${index === settings.providers.length - 1 ? "disabled" : ""}>↓</button>
       </span>
     </div>`).join("");
   document.querySelectorAll<HTMLInputElement>("[data-scope]").forEach((input) => {

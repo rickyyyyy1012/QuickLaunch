@@ -132,6 +132,11 @@ function render(): void {
 
   if (selectedIndex >= visibleResults.length) selectedIndex = Math.max(0, visibleResults.length - 1);
   resultsList.innerHTML = markup || `<div class="result-section"><h2>No results</h2></div>`;
+  resultsList.querySelectorAll<HTMLElement>('[role="option"]').forEach((row, index, rows) => {
+    row.setAttribute("aria-posinset", String(index + 1));
+    row.setAttribute("aria-setsize", String(rows.length));
+  });
+  searchInput.setAttribute("aria-expanded", String(visibleResults.length > 0));
   const selected = visibleResults[selectedIndex];
   if (selected) searchInput.setAttribute("aria-activedescendant", `result-${CSS.escape(selected.id)}`);
   else searchInput.removeAttribute("aria-activedescendant");
@@ -222,6 +227,10 @@ searchInput.addEventListener("input", startSearch);
 searchInput.addEventListener("keydown", (event) => {
   if (event.key === "ArrowDown") { event.preventDefault(); selectResult(selectedIndex + 1); }
   else if (event.key === "ArrowUp") { event.preventDefault(); selectResult(selectedIndex - 1); }
+  else if (event.key === "Home") { event.preventDefault(); selectResult(0); }
+  else if (event.key === "End") { event.preventDefault(); selectResult(visibleResults.length - 1); }
+  else if (event.key === "PageDown") { event.preventDefault(); selectResult(selectedIndex + 5); }
+  else if (event.key === "PageUp") { event.preventDefault(); selectResult(selectedIndex - 5); }
   else if (event.key === "Tab") { event.preventDefault(); moveToSection(event.shiftKey ? -1 : 1); }
   else if (event.key === "Enter") {
     event.preventDefault();

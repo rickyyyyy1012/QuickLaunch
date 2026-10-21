@@ -47,7 +47,17 @@ function getTheme(): ShellTheme {
   if (settings.theme === "high-contrast") return "high-contrast";
   if (settings.theme === "light") return "light";
   if (settings.theme === "dark") return "dark";
+  if (nativeTheme.shouldUseHighContrast) return "high-contrast";
   return nativeTheme.shouldUseDarkColors ? "dark" : "light";
+}
+
+function prefersReducedMotion(): boolean {
+  return settings.reducedMotion || nativeTheme.prefersReducedMotion;
+}
+
+function themeBackground(): string {
+  const theme = getTheme();
+  return theme === "high-contrast" ? "#000000" : theme === "dark" ? "#26262A" : "#F2F5F7";
 }
 
 function positionWindow(window: BrowserWindow): void {
@@ -72,6 +82,10 @@ function resizeWindow(_event: Electron.IpcMainEvent, requestedHeight: number): v
 }
 
 function sendTheme(): void {
+  if (launcherWindow && !shouldUseAcrylic()) {
+    launcherWindow.setBackgroundColor(themeBackground());
+  }
+  preferencesWindow?.setBackgroundColor(themeBackground());
   if (launcherReady) {
     launcherWindow?.webContents.send(IPC.shellTheme, getTheme());
   }
@@ -91,7 +105,7 @@ function hideLauncher(): void {
   }
 
   clearHideTimer();
-  const reducedMotion = nativeTheme.prefersReducedMotion;
+  const reducedMotion = prefersReducedMotion();
   launcherWindow.webContents.send(IPC.shellClosing, reducedMotion);
   hideTimer = setTimeout(() => {
     launcherWindow?.hide();
@@ -114,7 +128,7 @@ function showLauncher(): void {
   launcherWindow.show();
   launcherWindow.focus();
   sendTheme();
-  launcherWindow.webContents.send(IPC.shellOpening, nativeTheme.prefersReducedMotion);
+  launcherWindow.webContents.send(IPC.shellOpening, prefersReducedMotion());
 }
 
 function toggleLauncher(): void {
@@ -138,7 +152,7 @@ function createPreferencesWindow(): void {
     minHeight: 560,
     show: false,
     title: "QuickLaunch Preferences",
-    backgroundColor: "#F2F5F5F7",
+    backgroundColor: themeBackground(),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -209,7 +223,7 @@ function createLauncherWindow(): void {
     show: false,
     frame: false,
     transparent: false,
-    backgroundColor: useAcrylic ? "#00FFFFFF" : "#F2F5F5F7",
+    backgroundColor: useAcrylic ? "#00FFFFFF" : themeBackground(),
     backgroundMaterial: useAcrylic ? "acrylic" : "none",
     alwaysOnTop: true,
     skipTaskbar: true,

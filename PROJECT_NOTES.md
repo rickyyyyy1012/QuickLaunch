@@ -353,3 +353,24 @@ renderer code never receives Node.js or Electron primitives directly.
 - Typecheck/build verification is blocked in this environment because `npm`
   and `node` are not installed or on `PATH`.
 - No M8 work was started.
+
+## M8 implementation notes
+
+- The launcher uses a complete combobox/listbox relationship: the search field
+  exposes the active descendant, result options expose selection and position,
+  and visible result counts drive `aria-expanded`.
+- Keyboard navigation includes arrows, Home/End, Page Up/Page Down, Tab section
+  navigation, Enter, and Escape. Focus-visible styles and concise screen-reader
+  instructions are included in both renderer surfaces.
+- Theme selection now honors explicit light, dark, and high-contrast settings,
+  while system mode follows Windows native dark/light/high-contrast state.
+  Forced-colors CSS uses system colors rather than relying on token contrast.
+- Reduced motion combines the persisted preference with Electron's native
+  `prefersReducedMotion` signal, and CSS disables transitions and animations
+  whenever the OS requests reduced motion.
+
+## M8 verification status
+
+- `git diff --check` passes.
+- Typecheck/build verification remains blocked in this environment because
+  `npm`, `node`, and `tsc` are not available on `PATH`.

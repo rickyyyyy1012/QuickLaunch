@@ -18,16 +18,20 @@
           placeholder="QuickLaunch Search"
           aria-label="Search QuickLaunch"
           role="combobox"
-          aria-expanded="true"
+          aria-expanded="false"
           aria-controls="results-list"
           aria-autocomplete="list"
+          aria-haspopup="listbox"
+          aria-describedby="search-help"
         />
       </label>
+      <p id="search-help" class="visually-hidden">Use the arrow keys to move through results and Enter to launch the selected result.</p>
       <div class="content-shell">
-        <section class="results-shell" aria-label="Search results">
+        <section class="results-shell" aria-labelledby="results-heading">
+          <h1 id="results-heading" class="visually-hidden">Search results</h1>
           <div id="results-list" class="results-list" role="listbox" aria-label="Search results"></div>
         </section>
-        <aside id="preview-pane" class="preview-pane" aria-label="Selected result preview"></aside>
+        <aside id="preview-pane" class="preview-pane" aria-label="Selected result preview" aria-live="polite"></aside>
       </div>
     </main>
     <script src="./index.js"></script>
