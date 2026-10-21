@@ -311,3 +311,24 @@ renderer code never receives Node.js or Electron primitives directly.
 - `git diff --check` passes.
 - Typecheck/runtime verification remains blocked in this environment because
   `node`, `npm`, `electron`, and `tsc` are not installed or on `PATH`.
+
+## M6 implementation notes
+
+- Files and folders now query the Windows Search `SystemIndex` through a
+  cancellable PowerShell/ADO OLE DB helper first.
+- If Windows Search is unavailable, an installed voidtools Everything
+  `es.exe` helper is detected opportunistically; it is never a required
+  dependency.
+- A persisted incremental fallback index scans the existing user roots and is
+  used when neither indexed backend is available. Index entries survive
+  restarts under the Electron user-data cache directory.
+- Icon data URLs are persisted in `icons.json` and reloaded before providers
+  request icons. Search provider latency and cancellation state are logged
+  with the query id.
+
+## M6 verification status
+
+- `git diff --check` passes.
+- Typecheck/runtime verification depends on the Windows/npm toolchain; the
+  environment used for this milestone does not expose `node`, `npm`, or
+  `tsc` on `PATH`.
