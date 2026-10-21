@@ -208,6 +208,21 @@ renderer code never receives Node.js or Electron primitives directly.
 - Destructive system actions require explicit confirmation and robust error reporting.
 - Pixel accuracy cannot be validated until reference images and a target display scale are available.
 
+## M4 implementation notes
+
+- M4 adds calculator, unit conversion, currency, dictionary, Settings, system
+  actions, and web fallback providers to the existing async provider manager.
+- Calculator uses a small recursive-descent parser; it never evaluates input
+  as JavaScript. Unit conversion is offline and supports common length, mass,
+  and temperature units.
+- Currency uses the no-key Frankfurter API and dictionary lookup uses
+  dictionaryapi.dev. Both persist JSON cache files under Electron's user-data
+  directory and fall back to stale cache entries when offline.
+- Settings are curated `ms-settings:` links. Sleep and lock execute directly;
+  restart, shutdown, sign-out, and recycle-bin emptying require an explicit
+  confirmation dialog.
+- Web search is requested only when the non-web providers return no results.
+
 ## M1 implementation notes
 
 - M1 is implemented as a minimal Electron 33+ TypeScript shell; M2 providers
