@@ -395,3 +395,14 @@ renderer code never receives Node.js or Electron primitives directly.
 - `git diff --check` passes.
 - Typecheck/build verification remains blocked in this environment because
   `npm`, `node`, and `tsc` are not available on `PATH`.
+
+## M10 implementation notes
+
+- `.github/workflows/build-windows.yml` builds the Electron application on
+  `windows-latest` for pushes to `main`, `v*` tags, and manual dispatches.
+- Superseded runs are cancelled. The workflow installs dependencies with npm,
+  runs typecheck and tests, builds the application, packages a Windows
+  executable, and uploads it as the `QuickLaunch-windows` artifact.
+- Version tags also attach `dist/*.exe` to the corresponding GitHub Release.
+- Run URL: `https://github.com/rickyyyyy1012/QuickLaunch/actions/runs/<run-id>`
+- Artifact name: `QuickLaunch-windows`
