@@ -11,7 +11,7 @@ import { SettingsProvider } from "./settings";
 import { SystemProvider } from "./system";
 import { UnitsProvider } from "./units";
 import { WebProvider } from "./web";
-import { readStaleCache, writeCache } from "../cache";
+import { readStaleCache, writeCache } from "./cache";
 
 const DEBOUNCE_MS = 40;
 const DEFAULT_LIMIT = 8;
@@ -140,24 +140,24 @@ export class ProviderManager {
         if (items.length && !window.isDestroyed()) {
           window.webContents.send(IPC.searchSection, { queryId: request.queryId, providerId: web.id, title: web.title, items, isFinal: true });
         }
-
-        private providerOrder(id: string): number {
-          return this.settings.providers.find((provider) => provider.id === id)?.order ?? Number.MAX_SAFE_INTEGER;
-        }
-
-        private isScopeEnabled(id: string): boolean {
-          if (id === "apps") return this.settings.scopes.applications;
-          if (id === "files") return this.settings.scopes.files;
-          if (id === "folders") return this.settings.scopes.folders;
-          if (id === "settings") return this.settings.scopes.settings;
-          return true;
-        }
       }
     }
     if (!controller.signal.aborted && !window.isDestroyed()) {
       window.webContents.send(IPC.searchComplete, request.queryId);
     }
     if (this.active?.request.queryId === request.queryId) this.active = null;
+  }
+
+  private providerOrder(id: string): number {
+    return this.settings.providers.find((provider) => provider.id === id)?.order ?? Number.MAX_SAFE_INTEGER;
+  }
+
+  private isScopeEnabled(id: string): boolean {
+    if (id === "apps") return this.settings.scopes.applications;
+    if (id === "files") return this.settings.scopes.files;
+    if (id === "folders") return this.settings.scopes.folders;
+    if (id === "settings") return this.settings.scopes.settings;
+    return true;
   }
 
   private async readIcon(path: string, source: IconReference["source"]): Promise<IconReference> {
@@ -202,7 +202,7 @@ export class ProviderManager {
   private async executeSystemAction(action: string): Promise<void> {
     if (process.platform !== "win32") throw new Error("System actions are only supported on Windows.");
     const { execFile } = await import("node:child_process");
-    const commands: Record<string, string[]> = {
+    const commands: Record<string, [string, string[]]> = {
       sleep: ["rundll32.exe", ["powrprof.dll,SetSuspendState", "0,1,0"]],
       restart: ["shutdown.exe", ["/r", "/t", "0"]],
       shutdown: ["shutdown.exe", ["/s", "/t", "0"]],
@@ -212,7 +212,7 @@ export class ProviderManager {
     };
     const command = commands[action];
     if (!command) throw new Error(`Unknown system action: ${action}`);
-    await new Promise<void>((resolve, reject) => execFile(command[0], command[1], { windowsHide: true }, (error) => error ? reject(error) : resolve()));
+    await new Promise<void>((resolve, reject) => execFile(command[0], command[1], { windowsHide: true }, (error: Error | null) => error ? reject(error) : resolve()));
   }
 }
 
