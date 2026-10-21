@@ -17,8 +17,15 @@
           spellcheck="false"
           placeholder="QuickLaunch Search"
           aria-label="Search QuickLaunch"
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="results-list"
+          aria-autocomplete="list"
         />
       </label>
+      <section class="results-shell" aria-label="Search results">
+        <div id="results-list" class="results-list" role="listbox" aria-label="Search results"></div>
+      </section>
     </main>
     <script src="./index.js"></script>
   </body>

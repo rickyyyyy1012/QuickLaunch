@@ -26,4 +26,7 @@ contextBridge.exposeInMainWorld("quickLaunch", {
   hide(): void {
     ipcRenderer.send(IPC.hideWindow);
   },
+  resize(height: number): void {
+    ipcRenderer.send(IPC.resizeWindow, height);
+  },
 });
