@@ -5,6 +5,6 @@ const source = path.join(__dirname, "..", "src", "renderer");
 const destination = path.join(__dirname, "..", "dist", "renderer");
 
 fs.mkdirSync(destination, { recursive: true });
-for (const file of ["index.html", "styles.css"]) {
+for (const file of ["index.html", "styles.css", "preferences.html", "preferences.css"]) {
   fs.copyFileSync(path.join(source, file), path.join(destination, file));
 }

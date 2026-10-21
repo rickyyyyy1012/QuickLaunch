@@ -1,4 +1,4 @@
-export type ThemeName = "light" | "dark";
+export type ThemeName = "light" | "dark" | "high-contrast";
 
 export interface ThemeTokens {
   panelBackground: string;
@@ -104,6 +104,20 @@ export const darkTokens: ThemeTokens = {
   hoverRow: "rgba(10, 132, 255, 0.20)",
 };
 
+export const highContrastTokens: ThemeTokens = {
+  ...darkTokens,
+  panelBackground: "#000000",
+  panelFallbackBackground: "#000000",
+  searchBackground: "#000000",
+  text: "#FFFFFF",
+  mutedText: "#FFFFFF",
+  accent: "#FFFF00",
+  sectionText: "#FFFFFF",
+  selectedRow: "#0000FF",
+  hoverRow: "#333333",
+  shadowOpacity: "0.8",
+};
+
 export function tokensToCssVariables(tokens: ThemeTokens): string {
   return Object.entries(tokens)
     .map(([name, value]) => `--ql-${kebabCase(name)}: ${value};`)
@@ -113,7 +127,7 @@ export function tokensToCssVariables(tokens: ThemeTokens): string {
 export function applyTheme(theme: ThemeName): void {
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.cssText = tokensToCssVariables(
-    theme === "dark" ? darkTokens : lightTokens,
+    theme === "dark" ? darkTokens : theme === "high-contrast" ? highContrastTokens : lightTokens,
   );
 }
 

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { IPC, LauncherResult, SearchCancelRequest, SearchRequest, SearchSection, SearchError, ShellTheme } from "../shared/ipc";
+import { AppSettings, IPC, LauncherResult, SearchCancelRequest, SearchRequest, SearchSection, SearchError, ShellTheme } from "../shared/ipc";
 
 contextBridge.exposeInMainWorld("quickLaunch", {
   onOpening(callback: (reducedMotion: boolean) => void): () => void {
@@ -22,6 +22,16 @@ contextBridge.exposeInMainWorld("quickLaunch", {
     };
     ipcRenderer.on(IPC.shellTheme, listener);
     return () => ipcRenderer.removeListener(IPC.shellTheme, listener);
+  },
+  onSettingsChanged(callback: (settings: AppSettings) => void): () => void {
+    const listener = (_event: Electron.IpcRendererEvent, settings: AppSettings) => callback(settings);
+    ipcRenderer.on(IPC.settingsChanged, listener);
+    return () => ipcRenderer.removeListener(IPC.settingsChanged, listener);
+  },
+  onHotkeyError(callback: (message: string) => void): () => void {
+    const listener = (_event: Electron.IpcRendererEvent, message: string) => callback(message);
+    ipcRenderer.on(IPC.hotkeyError, listener);
+    return () => ipcRenderer.removeListener(IPC.hotkeyError, listener);
   },
   hide(): void {
     ipcRenderer.send(IPC.hideWindow);
@@ -52,6 +62,15 @@ contextBridge.exposeInMainWorld("quickLaunch", {
   },
   execute(result: LauncherResult): void {
     ipcRenderer.send(IPC.resultExecute, result);
+  },
+  openPreferences(): void {
+    ipcRenderer.send(IPC.preferencesOpen);
+  },
+  getSettings(): Promise<AppSettings> {
+    return ipcRenderer.invoke(IPC.settingsGet);
+  },
+  updateSettings(settings: Partial<AppSettings>): Promise<AppSettings> {
+    return ipcRenderer.invoke(IPC.settingsUpdate, settings);
   },
   readIcon(icon: { cacheKey: string; source: "file" | "app" | "generated"; mimeType?: string }): Promise<string> {
     return ipcRenderer.invoke(IPC.iconRead, icon);
