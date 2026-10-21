@@ -374,3 +374,24 @@ renderer code never receives Node.js or Electron primitives directly.
 - `git diff --check` passes.
 - Typecheck/build verification remains blocked in this environment because
   `npm`, `node`, and `tsc` are not available on `PATH`.
+
+## M9 implementation notes
+
+- The visual token layer now carries the reference typography weights, result
+  spacing, selected/hover colors, shadow measurements, and open/close timing
+  instead of duplicating those values in renderer CSS.
+- Result rows now use the provisional 24px icon box, 7px vertical padding,
+  2px vertical rhythm, and tokenized 13px/11px/10px type scale. Preview title
+  and body weights are tokenized as well.
+- Dark-theme hover feedback uses the same approximately 13% accent opacity as
+  the light reference. High-contrast overrides remain explicit and avoid
+  relying on translucent color.
+- No screenshot assets are available in `design-reference/`, so M9 is checked
+  against the documented provisional measurements. M10 distribution work was
+  not started.
+
+## M9 verification status
+
+- `git diff --check` passes.
+- Typecheck/build verification remains blocked in this environment because
+  `npm`, `node`, and `tsc` are not available on `PATH`.
