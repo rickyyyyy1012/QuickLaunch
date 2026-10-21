@@ -1,0 +1,118 @@
+:root {
+  font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+  color: var(--ql-text);
+  background: transparent;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+body {
+  padding: var(--ql-panel-inset);
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: center top;
+}
+
+body.is-open {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 120ms cubic-bezier(0.2, 0, 0, 1),
+    transform 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+body.is-closing {
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 80ms cubic-bezier(0.2, 0, 0, 1),
+    transform 80ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  body.is-open,
+  body.is-closing {
+    transition: none;
+  }
+}
+
+.panel {
+  width: 100%;
+  height: 100%;
+  padding: var(--ql-content-margin);
+  border-radius: var(--ql-panel-radius);
+  background: var(--ql-panel-background);
+  box-shadow:
+    0 var(--ql-shadow-depth) var(--ql-shadow-blur)
+    rgba(0, 0, 0, var(--ql-shadow-opacity));
+}
+
+.search-shell {
+  display: grid;
+  grid-template-columns: var(--ql-search-icon-column) 1fr;
+  align-items: center;
+  width: 100%;
+  height: var(--ql-search-height);
+  padding: 0 var(--ql-search-padding-x);
+  border-radius: var(--ql-search-radius);
+  background: var(--ql-search-background);
+  cursor: text;
+}
+
+.magnifier {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: auto;
+  border: 2px solid var(--ql-muted-text);
+  border-radius: 50%;
+}
+
+.magnifier::after {
+  position: absolute;
+  right: -5px;
+  bottom: -3px;
+  width: 7px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ql-muted-text);
+  content: "";
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+
+input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: var(--ql-text);
+  background: transparent;
+  caret-color: var(--ql-accent);
+  font: var(--ql-search-font-weight) var(--ql-search-font-size) /
+    normal "Segoe UI Variable", "Segoe UI", sans-serif;
+}
+
+input::placeholder {
+  color: var(--ql-muted-text);
+  opacity: 1;
+}
+
+input::-webkit-search-cancel-button {
+  display: none;
+}
