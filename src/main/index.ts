@@ -9,6 +9,7 @@ import {
 } from "electron";
 import { join } from "node:path";
 import { IPC, ShellTheme } from "../shared/ipc";
+import { createProviderManager, ProviderManager } from "./providers";
 
 const WINDOW_WIDTH = 680;
 const WINDOW_HEIGHT = 180;
@@ -20,6 +21,7 @@ const HOTKEY = "Alt+Space";
 let launcherWindow: BrowserWindow | null = null;
 let hideTimer: NodeJS.Timeout | null = null;
 let launcherReady = false;
+let providerManager: ProviderManager | null = null;
 
 function isWindows11OrNewer(): boolean {
   if (process.platform !== "win32") {
@@ -160,12 +162,16 @@ app.whenReady().then(() => {
   createLauncherWindow();
   registerHotkey();
   nativeTheme.on("updated", sendTheme);
+  providerManager = createProviderManager();
 
   ipcMain.on(IPC.hideWindow, hideLauncher);
   ipcMain.on(IPC.resizeWindow, resizeWindow);
+  providerManager.register(launcherWindow!);
 });
 
 app.on("will-quit", () => {
   nativeTheme.removeListener("updated", sendTheme);
   globalShortcut.unregisterAll();
+  providerManager?.dispose();
+  providerManager = null;
 });

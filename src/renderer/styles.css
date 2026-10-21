@@ -137,6 +137,13 @@ body.is-closing {
   font-weight: 700;
 }
 
+.result-icon img {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
 .result-icon-app { background: #4f8df7; }
 .result-icon-file { background: #d88b2d; }
 .result-icon-setting { background: #7d67d9; }
