@@ -31,6 +31,6 @@ export class SystemProvider implements Provider {
         score,
         ...(destructive ? { requiresConfirmation: action as "restart" | "shutdown" | "sign-out" | "empty-recycle-bin" } : {}),
       };
-    }).filter((result): result is LauncherResult => result !== null);
+    }).filter((result): result is NonNullable<typeof result> => result !== null);
   }
 }

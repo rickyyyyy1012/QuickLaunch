@@ -32,7 +32,7 @@ export class SettingsProvider implements Provider {
     const results = SETTINGS.map(([title, uri, keywords]) => {
       const score = title.toLowerCase().includes(query) ? 0.95 : keywords.some((keyword) => keyword.includes(query) || query.includes(keyword)) ? 0.8 : 0;
       return score ? { id: `setting:${uri}`, providerId: this.id, kind: "setting" as const, title, subtitle: uri, uri, score } : null;
-    }).filter((result): result is LauncherResult => result !== null);
+    }).filter((result): result is NonNullable<typeof result> => result !== null);
     const preferences: LauncherResult = {
       id: "setting:quicklaunch-preferences",
       providerId: this.id,

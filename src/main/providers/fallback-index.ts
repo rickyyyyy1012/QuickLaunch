@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
-import { readStaleCache, writeCache } from "../cache";
+import { readStaleCache, writeCache } from "./cache";
 import { IndexedFile } from "./system-index";
 
 const CACHE_NAME = "file-index.json";

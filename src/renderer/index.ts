@@ -3,10 +3,9 @@ import { LauncherResult, SearchError, SearchSection } from "../shared/ipc";
 
 type ResultSection = { id: string; title: string; results: LauncherResult[]; expanded: boolean };
 
-const searchInput = document.querySelector<HTMLInputElement>("#search-input");
-const resultsList = document.querySelector<HTMLDivElement>("#results-list");
-const previewPane = document.querySelector<HTMLElement>("#preview-pane");
-if (!searchInput || !resultsList || !previewPane) throw new Error("QuickLaunch renderer elements are missing.");
+const searchInput = document.querySelector<HTMLInputElement>("#search-input")!;
+const resultsList = document.querySelector<HTMLDivElement>("#results-list")!;
+const previewPane = document.querySelector<HTMLElement>("#preview-pane")!;
 
 const SECTION_CAP = 4;
 let sections: ResultSection[] = [];

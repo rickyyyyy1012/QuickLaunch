@@ -13,7 +13,8 @@ const START_MENU_COMMAND = [
   "    $shortcut = $shell.CreateShortcut($_.FullName);",
   "    [PSCustomObject]@{ Name = $_.BaseName; Path = $_.FullName; Target = $shortcut.TargetPath; Arguments = $shortcut.Arguments; WorkingDirectory = $shortcut.WorkingDirectory }",
   "  }",
-  "} } | ConvertTo-Json -Compress";
+  "} } | ConvertTo-Json -Compress",
+];
 const UWP_COMMAND = "Get-StartApps | Select-Object Name,AppID | ConvertTo-Json -Compress";
 
 interface ShortcutRecord {
@@ -76,7 +77,7 @@ async function runPowerShell(command: string, signal: AbortSignal): Promise<stri
 
 async function getShortcutApps(signal: AbortSignal): Promise<ShortcutRecord[]> {
   if (process.platform !== "win32") return [];
-  const output = await runPowerShell(START_MENU_COMMAND, signal);
+  const output = await runPowerShell(START_MENU_COMMAND.join(" "), signal);
   return parseJson<ShortcutRecord>(output);
 }
 

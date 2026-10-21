@@ -40,19 +40,19 @@ function isWindows11OrNewer(): boolean {
 }
 
 function shouldUseAcrylic(): boolean {
-  return isWindows11OrNewer() && systemPreferences.isAeroGlassEnabled;
+  return isWindows11OrNewer() && systemPreferences.isAeroGlassEnabled();
 }
 
 function getTheme(): ShellTheme {
   if (settings.theme === "high-contrast") return "high-contrast";
   if (settings.theme === "light") return "light";
   if (settings.theme === "dark") return "dark";
-  if (nativeTheme.shouldUseHighContrast) return "high-contrast";
+  if (nativeTheme.shouldUseHighContrastColors) return "high-contrast";
   return nativeTheme.shouldUseDarkColors ? "dark" : "light";
 }
 
 function prefersReducedMotion(): boolean {
-  return settings.reducedMotion || nativeTheme.prefersReducedMotion;
+  return settings.reducedMotion;
 }
 
 function themeBackground(): string {

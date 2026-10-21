@@ -17,8 +17,8 @@ function scoreMatch(name: string, query: string): number {
 
 
 export class FilesProvider implements Provider {
-  readonly id = "files";
-  readonly title = "Files";
+  readonly id: string = "files";
+  readonly title: string = "Files";
   private readonly fallback = new IncrementalFileIndex();
 
   async search(text: string, context: ProviderContext): Promise<LauncherResult[]> {
