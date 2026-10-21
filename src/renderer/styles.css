@@ -40,16 +40,16 @@ body.is-open {
   opacity: 1;
   transform: scale(1);
   transition:
-    opacity 120ms cubic-bezier(0.2, 0, 0, 1),
-    transform 120ms cubic-bezier(0.2, 0, 0, 1);
+    opacity var(--ql-animation-open-duration) var(--ql-animation-easing),
+    transform var(--ql-animation-open-duration) var(--ql-animation-easing);
 }
 
 body.is-closing {
   opacity: 0;
   transform: scale(0.96);
   transition:
-    opacity 80ms cubic-bezier(0.2, 0, 0, 1),
-    transform 80ms cubic-bezier(0.2, 0, 0, 1);
+    opacity var(--ql-animation-close-duration) var(--ql-animation-easing),
+    transform var(--ql-animation-close-duration) var(--ql-animation-easing);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -113,7 +113,7 @@ body.is-closing {
   margin: 8px 10px 4px;
   color: var(--ql-section-text);
   font-size: 10px;
-  font-weight: 600;
+  font-weight: var(--ql-section-font-weight);
   letter-spacing: 0.08em;
   line-height: 16px;
   text-transform: uppercase;
@@ -121,16 +121,17 @@ body.is-closing {
 
 .result-row {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-columns: var(--ql-result-icon-size) minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  height: 40px;
-  padding: 0 10px;
+  gap: var(--ql-result-gap);
+  min-height: calc(var(--ql-result-icon-size) + (var(--ql-row-padding-y) * 2));
+  margin: var(--ql-row-margin-y) 0;
+  padding: var(--ql-row-padding-y) var(--ql-row-padding-x);
   border-radius: var(--ql-row-radius);
   cursor: pointer;
   user-select: none;
   content-visibility: auto;
-  contain-intrinsic-size: 40px;
+  contain-intrinsic-size: 38px;
 }
 
 .result-row.is-selected {
@@ -144,10 +145,10 @@ body.is-closing {
 
 .result-icon {
   display: grid;
-  width: 20px;
-  height: 20px;
+  width: var(--ql-result-icon-size);
+  height: var(--ql-result-icon-size);
   place-items: center;
-  border-radius: 5px;
+  border-radius: var(--ql-result-icon-radius);
   color: white;
   background: #6b7280;
   font-size: 11px;
@@ -178,8 +179,15 @@ body.is-closing {
   white-space: nowrap;
 }
 
-.result-title { font-size: var(--ql-result-title-size); }
-.result-subtitle { color: var(--ql-muted-text); font-size: var(--ql-result-subtitle-size); }
+.result-title {
+  font-size: var(--ql-result-title-size);
+  font-weight: var(--ql-result-title-weight);
+}
+.result-subtitle {
+  color: var(--ql-muted-text);
+  font-size: var(--ql-result-subtitle-size);
+  font-weight: var(--ql-result-subtitle-weight);
+}
 
 .is-selected .result-subtitle,
 .is-selected .result-meta {
@@ -188,7 +196,8 @@ body.is-closing {
 
 .result-meta {
   color: var(--ql-muted-text);
-  font-size: 11px;
+  font-size: var(--ql-result-category-size);
+  font-weight: var(--ql-result-category-weight);
   text-align: right;
 }
 
@@ -254,7 +263,7 @@ body.is-closing {
 .preview-kind {
   margin-top: 2px;
   color: var(--ql-muted-text);
-  font-size: 10px;
+  font-size: var(--ql-result-category-size);
   text-transform: uppercase;
 }
 
@@ -276,7 +285,7 @@ body.is-closing {
 
 .preview-label {
   color: var(--ql-text);
-  font-weight: 600;
+  font-weight: var(--ql-preview-title-weight);
 }
 
 .preview-value {
@@ -290,6 +299,7 @@ body.is-closing {
   margin: 14px 0 0;
   color: var(--ql-muted-text);
   font-size: var(--ql-preview-body-size);
+  font-weight: var(--ql-preview-body-weight);
   line-height: 15px;
 }
 

@@ -23,6 +23,7 @@ export interface ThemeTokens {
   searchIconColumn: string;
   searchFontSize: string;
   searchFontWeight: string;
+  sectionFontWeight: string;
   resultsPreviewGap: string;
   previewWidth: string;
   previewPadding: string;
@@ -30,20 +31,29 @@ export interface ThemeTokens {
   rowPaddingX: string;
   rowPaddingY: string;
   rowRadius: string;
+  resultGap: string;
   resultIconSize: string;
   resultIconRadius: string;
   resultTitleSize: string;
+  resultTitleWeight: string;
   resultSubtitleSize: string;
+  resultSubtitleWeight: string;
   resultCategorySize: string;
+  resultCategoryWeight: string;
   previewIconSize: string;
   previewIconRadius: string;
   previewTitleSize: string;
+  previewTitleWeight: string;
   previewBodySize: string;
+  previewBodyWeight: string;
   selectedRow: string;
   hoverRow: string;
   shadowBlur: string;
   shadowDepth: string;
   shadowOpacity: string;
+  animationOpenDuration: string;
+  animationCloseDuration: string;
+  animationEasing: string;
 }
 
 export const lightTokens: ThemeTokens = {
@@ -69,6 +79,7 @@ export const lightTokens: ThemeTokens = {
   searchIconColumn: "32px",
   searchFontSize: "24px",
   searchFontWeight: "300",
+  sectionFontWeight: "600",
   resultsPreviewGap: "12px",
   previewWidth: "250px",
   previewPadding: "16px",
@@ -76,20 +87,29 @@ export const lightTokens: ThemeTokens = {
   rowPaddingX: "10px",
   rowPaddingY: "7px",
   rowRadius: "8px",
+  resultGap: "10px",
   resultIconSize: "24px",
   resultIconRadius: "5px",
   resultTitleSize: "13px",
+  resultTitleWeight: "400",
   resultSubtitleSize: "11px",
+  resultSubtitleWeight: "400",
   resultCategorySize: "10px",
+  resultCategoryWeight: "400",
   previewIconSize: "56px",
   previewIconRadius: "12px",
   previewTitleSize: "16px",
+  previewTitleWeight: "600",
   previewBodySize: "11px",
+  previewBodyWeight: "400",
   selectedRow: "#007AFF",
   hoverRow: "rgba(0, 122, 255, 0.13)",
   shadowBlur: "50px",
   shadowDepth: "20px",
   shadowOpacity: "0.35",
+  animationOpenDuration: "120ms",
+  animationCloseDuration: "80ms",
+  animationEasing: "cubic-bezier(0.2, 0, 0, 1)",
 };
 
 export const darkTokens: ThemeTokens = {
@@ -101,7 +121,7 @@ export const darkTokens: ThemeTokens = {
   mutedText: "rgba(255, 255, 255, 0.64)",
   sectionText: "rgba(255, 255, 255, 0.64)",
   selectedRow: "#0A84FF",
-  hoverRow: "rgba(10, 132, 255, 0.20)",
+  hoverRow: "rgba(10, 132, 255, 0.13)",
 };
 
 export const highContrastTokens: ThemeTokens = {
